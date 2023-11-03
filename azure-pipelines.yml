@@ -6,12 +6,12 @@ variables:
   releaseBranchName: "release"
 
 schedules:
-- cron: '0 9 30 * *'
-  displayName: 'Deploy every day at 9:30 A.M.'
-  branches:
-    include:
-    - release
-  always: false 
+  - cron: "0 9 30 * *"
+    displayName: "Deploy every day at 9:30 A.M."
+    branches:
+      include:
+        - release
+    always: false
 
 stages:
   - stage: "Build"
@@ -80,7 +80,7 @@ stages:
     condition: |
       and
       (
-        succeeded(), 
+        succeeded(),
         eq(variables['Build.SourceBranchName'], variables['releaseBranchName'])
       )
     jobs:
@@ -102,17 +102,18 @@ stages:
                     azureSubscription: "Resource Manager - Tailspin - Space Game"
                     appName: "$(WebAppNameDev)"
                     package: "$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip"
-  - stage: 'Test'
-    displayName: 'Deploy to the test environment'
+
+  - stage: "Test"
+    displayName: "Deploy to the test environment"
     dependsOn: Dev
-    #condition: eq(variables['Build.Reason'], 'Schedule')
+    condition: eq(variables['Build.Reason'], 'Schedule')
     jobs:
       - deployment: Deploy
         pool:
-          vmImage: 'ubuntu-20.04'
+          vmImage: "ubuntu-20.04"
         environment: test
         variables:
-          - group: 'Release'
+          - group: "Release"
         strategy:
           runOnce:
             deploy:
@@ -120,8 +121,8 @@ stages:
                 - download: current
                   artifact: drop
                 - task: AzureWebApp@1
-                  displayName: 'Azure App Service Deploy: website'
-                inputs:
-                  azureSubscription: 'Resource Manager - Tailspin - Space Game'
-                  appName: '$(WebAppNameTest)'
-                  package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
+                  displayName: "Azure App Service Deploy: website"
+                  inputs:
+                    azureSubscription: "Resource Manager - Tailspin - Space Game"
+                    appName: "$(WebAppNameTest)"
+                    package: "$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip"
